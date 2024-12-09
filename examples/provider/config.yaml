@@ -10,13 +10,15 @@ metadata:
   name: example-provider-secret
 type: Opaque
 data:
-  # credentials: BASE64ENCODED_PROVIDER_CREDS
+  credentials: BASE64ENCODED_PROVIDER_CREDS
 ---
-apiVersion: template.crossplane.io/v1alpha1
+apiVersion: snowflake.crossplane.io/v1alpha1
 kind: ProviderConfig
 metadata:
   name: example
 spec:
+  snowflakeAccount: test-account
+  token: test
   credentials:
     source: Secret
     secretRef:
