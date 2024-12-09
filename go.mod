@@ -1,4 +1,4 @@
-module github.com/crossplane/provider-snowflake
+module github.com/allenkallz/snowflake-provider
 
 go 1.21
 
