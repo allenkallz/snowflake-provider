@@ -1,4 +1,4 @@
-module github.com/allenkallz/provider-sonwflake
+module github.com/allenkallz/provider-snowflake
 
 go 1.21
 
