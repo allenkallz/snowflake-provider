@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.co/allenkallz/provider-snowflake/apis/database/v1alpha1"
+	"github.com/allenkallz/provider-snowflake/apis/database/v1alpha1"
 	apisv1alpha1 "github.com/allenkallz/provider-snowflake/apis/v1alpha1"
 	"github.com/allenkallz/provider-snowflake/internal/clients/snowflake"
 	"github.com/allenkallz/provider-snowflake/internal/features"
