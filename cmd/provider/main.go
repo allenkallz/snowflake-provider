@@ -37,10 +37,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-snowflake/apis"
-	"github.com/crossplane/provider-snowflake/apis/v1alpha1"
-	snowflake "github.com/crossplane/provider-snowflake/internal/controller"
-	"github.com/crossplane/provider-snowflake/internal/features"
+	"github.com/allenkallz/provider-snowflake/apis"
+	"github.com/allenkallz/provider-snowflake/apis/v1alpha1"
+	snowflake "github.com/allenkallz/provider-snowflake/internal/controller"
+	"github.com/allenkallz/provider-snowflake/internal/features"
 )
 
 func main() {
