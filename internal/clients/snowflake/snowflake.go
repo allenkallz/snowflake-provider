@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/allenkallz/provider-snowflake/apis/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/crossplane/provider-snowflake/apis/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,7 +28,7 @@ type ClientInfo struct {
 }
 
 type Client interface {
-	TableClient
+	// TableClient
 	DatabaseClient
 }
 
@@ -40,13 +40,13 @@ type DatabaseClient interface {
 	UpdateDatabase(ctx context.Context, dbinfo DbInfo)
 }
 
-type TableClient interface {
-	ListTable(ctx context.Context, tableinfo TableInfo)
-	FetchTable(ctx context.Context, tableinfo TableInfo)
-	CreateTable(ctx context.Context, tableinfo TableInfo)
-	DeleteTable(ctx context.Context, tableinfo TableInfo)
-	UpdateTable(ctx context.Context, tableinfo TableInfo)
-}
+// type TableClient interface {
+// 	ListTable(ctx context.Context, tableinfo TableInfo)
+// 	FetchTable(ctx context.Context, tableinfo TableInfo)
+// 	CreateTable(ctx context.Context, tableinfo TableInfo)
+// 	DeleteTable(ctx context.Context, tableinfo TableInfo)
+// 	UpdateTable(ctx context.Context, tableinfo TableInfo)
+// }
 
 func (c *ClientInfo) MakeRequest(method string, api_path string, payload map[string]interface{}) {
 

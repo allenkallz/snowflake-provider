@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/allenkallz/snowflake-provider/apis/database/v1alpha1"
+	"github.com/allenkallz/provider-snowflake/apis/database/v1alpha1"
 )
 
 type DbInfo struct {
