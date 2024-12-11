@@ -94,7 +94,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 type connector struct {
 	kube                 client.Client
 	usage                resource.Tracker
-	newSonwflakeClientFn func(cfg snowflake.ClientInfo) snowflake.DatabaseClient
+	newSnowflakeClientFn func(cfg snowflake.ClientInfo) snowflake.DatabaseClient
 	// newServiceFn func(creds []byte) (interface{}, error)
 }
 
@@ -125,7 +125,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	svc := c.newSonwflakeClientFn(*clientInfo)
+	svc := c.newSnowflakeClientFn(*clientInfo)
 
 	return &external{client: svc, kube: c.kube}, nil
 }

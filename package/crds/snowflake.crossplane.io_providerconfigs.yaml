@@ -103,8 +103,14 @@ spec:
                 required:
                 - source
                 type: object
+              snowflakeAccount:
+                description: "snowflake account identifer\n\t for manufacturing the
+                  identifier is VOLVOCARS.MANUFACTURINGANALYTICS\n\t for EDW the indentifier
+                  is VOLVOCARS.ENTERPRISE"
+                type: string
             required:
             - credentials
+            - snowflakeAccount
             type: object
           status:
             description: A ProviderConfigStatus reflects the observed state of a ProviderConfig.
