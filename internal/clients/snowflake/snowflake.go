@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	dbv1alpha1 "github.com/allenkallz/provider-snowflake/apis/database/v1alpha1"
+
 	"github.com/allenkallz/provider-snowflake/apis/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -35,8 +37,8 @@ type Client interface {
 type DatabaseClient interface {
 	ListDatabase(ctx context.Context, dbinfo DbInfo)
 	FetchDatabase(ctx context.Context, dbinfo DbInfo)
-	CreateDatabase(ctx context.Context, dbinfo DbInfo)
-	DeleteDatabase(ctx context.Context, dbinfo DbInfo)
+	CreateDatabase(ctx context.Context, db *dbv1alpha1.DatabaseParameters) (string, error)
+	DeleteDatabase(ctx context.Context, db *dbv1alpha1.DatabaseParameters) error
 	UpdateDatabase(ctx context.Context, dbinfo DbInfo)
 }
 
@@ -51,6 +53,14 @@ type DatabaseClient interface {
 func (c *ClientInfo) MakeRequest(method string, api_path string, payload map[string]interface{}) {
 
 }
+
+// func MakeClient(snowflakeaccount string, jwttoken string) ClientInfo {
+// 	return ClientInfo{
+// 		SnowflakeAccount: snowflakeaccount,
+// 		JwtToken:         jwttoken,
+// 		httpClient:       &http.Client{},
+// 	}
+// }
 
 // all helper method
 func GetClientInfo(ctx context.Context, c client.Client, mg resource.Managed) (*ClientInfo, error) {

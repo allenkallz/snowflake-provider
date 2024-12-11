@@ -29,6 +29,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -53,12 +54,16 @@ const (
 	errGetFailed    = "cannot retrieve database"
 )
 
-// A NoOpService does nothing.
-type NoOpService struct{}
+// // A NoOpService does nothing.
+// type NoOpService struct{}
 
-var (
-	newNoOpService = func(_ []byte) (interface{}, error) { return &NoOpService{}, nil }
-)
+// var (
+// 	newNoOpService = func(_ []byte) (interface{}, error) { return &NoOpService{}, nil }
+// )
+
+func NewDatabaseClient(cfg snowflake.ClientInfo) {
+
+}
 
 // Setup adds a controller that reconciles Database managed resources.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
@@ -73,9 +78,9 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1alpha1.DatabaseGroupVersionKind),
 		managed.WithExternalConnecter(&connector{
-			kube:         mgr.GetClient(),
-			usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
-			newServiceFn: newNoOpService}),
+			kube:   mgr.GetClient(),
+			usage:  resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
+			logger: o.Logger}),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -92,9 +97,10 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 // A connector is expected to produce an ExternalClient when its Connect method
 // is called.
 type connector struct {
-	kube                 client.Client
-	usage                resource.Tracker
-	newSnowflakeClientFn func(cfg snowflake.ClientInfo) snowflake.DatabaseClient
+	kube   client.Client
+	usage  resource.Tracker
+	logger logging.Logger
+	// newSnowflakeClientFn func(cfg snowflake.ClientInfo) snowflake.DatabaseClient
 	// newServiceFn func(creds []byte) (interface{}, error)
 }
 
@@ -125,9 +131,9 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	svc := c.newSnowflakeClientFn(*clientInfo)
+	// svc := snowflake.MakeClient(clientInfo.SnowflakeAccount, clientInfo.JwtToken)
 
-	return &external{client: svc, kube: c.kube}, nil
+	return &external{client: clientInfo, kube: c.kube}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
@@ -174,7 +180,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	fmt.Printf("Creating: %+v", cr)
 
 	// set creating status
-	cr.Status.SetConditons(xpv1.Creating())
+	cr.SetConditions(xpv1.Creating())
 
 	resp, err := e.client.CreateDatabase(ctx, &cr.Spec.ForProvider)
 
@@ -206,7 +212,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}, nil
 }
 
-func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr, ok := mg.(*v1alpha1.Database)
 	if !ok {
 		return errors.New(errNotDatabase)
@@ -214,5 +220,10 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	fmt.Printf("Deleting: %+v", cr)
 
-	return nil
+	cr.SetConditions(xpv1.Deleting())
+
+	err := e.client.DeleteDatabase(ctx, &cr.Spec.ForProvider)
+
+	fmt.Printf("err: ", err)
+	return err
 }

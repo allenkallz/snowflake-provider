@@ -30,7 +30,7 @@ Generally projects are named `provider-<name>`, with `name` being the API being
 managed. Example project names are `provider-aws`, `provider-kubernetes`,
 and `provider-github`.
 
-The [provider-snowflake](https://github.com/crossplane/provider-snowflake) repository can be
+The [provider-snowflake](https://github.com/allenkallz/provider-snowflake) repository can be
 used as a starting point for new providers. For [terrajet](https://github.com/crossplane/terrajet)-based providers, the
 [provider-jet-snowflake](https://github.com/crossplane-contrib/provider-jet-snowflake) is
 available.
@@ -53,7 +53,7 @@ Most Crossplane providers include the following files:
   with contacts for project Owners
 - [ ]  Ensure `hack/boilerplate.go.txt` (used in Code generation) includes
   Crossplane Authors, Apache license and any other Copyright statements:
-  [https://github.com/crossplane/provider-snowflake/blob/main/hack/boilerplate.go.txt](https://github.com/crossplane/provider-snowflake/blob/main/hack/boilerplate.go.txt)
+  [https://github.com/allenkallz/provider-snowflake/blob/main/hack/boilerplate.go.txt](https://github.com/allenkallz/provider-snowflake/blob/main/hack/boilerplate.go.txt)
 - [ ] Include Documentation on how to:
   - [ ] Install Provider
   - [ ] Contribute to Development
@@ -68,7 +68,7 @@ There are a number of build tools and processes that are common across the
 Crossplane ecosystem. Using these ensures a consistent development environment
 across projects.
 
-The [provider-snowflake](https://github.com/crossplane/provider-snowflake)
+The [provider-snowflake](https://github.com/allenkallz/provider-snowflake)
 repository contains most of these settings.
 
 - [ ] Use the [Upbound build](https://github.com/upbound/build) submodule. (see
@@ -81,7 +81,7 @@ repository contains most of these settings.
 - [ ] Create a [Crossplane
   Package](https://crossplane.io/docs/master/concepts/packages.html)
   configuration (see
-  [package/crossplane.yaml)](https://github.com/crossplane/provider-snowflake/blob/main/package/crossplane.yaml)
+  [package/crossplane.yaml)](https://github.com/allenkallz/provider-snowflake/blob/main/package/crossplane.yaml)
 
 ## Deployment of Artifacts
 
@@ -96,7 +96,7 @@ the publish and promotion workflows.
 In general, providers should:
 
 - [ ] Utilize GitHub workflows from
-  <https://github.com/crossplane/provider-snowflake/tree/main/.github/workflows>
+  <https://github.com/allenkallz/provider-snowflake/tree/main/.github/workflows>
 - [ ] Create OCI image repos to push Package and Controller images.
 - [ ] Automatically push Provider images and packages via CI
 - [ ] Add GitHub Secrets to push to Docker repository. (To be performed by
@@ -113,6 +113,6 @@ to grant your project access to the GitHub org scoped secrets.
 - [ ] Follow recommendations at
   [https://github.com/crossplane/crossplane/blob/master/GOVERNANCE.md#repository-governance](https://github.com/crossplane/crossplane/blob/master/GOVERNANCE.md#repository-governance)
 - [ ] Enable Issues on your project and configure Issue snowflakes (examples at:
-  [.github/ISSUE_TEMPLATE](https://github.com/crossplane/provider-snowflake/tree/master/.github/ISSUE_TEMPLATE))
+  [.github/ISSUE_TEMPLATE](https://github.com/allenkallz/provider-snowflake/tree/master/.github/ISSUE_TEMPLATE))
 - [ ] Create Pull Request Snowflakes: (example:
-  [PULL_REQUEST_TEMPLATE.md](https://github.com/crossplane/provider-snowflake/blob/master/.github/PULL_REQUEST_TEMPLATE.md))
+  [PULL_REQUEST_TEMPLATE.md](https://github.com/allenkallz/provider-snowflake/blob/master/.github/PULL_REQUEST_TEMPLATE.md))
