@@ -19,7 +19,9 @@ type DbInfo struct {
 	Kind string `json:"kind"`
 }
 
-func (c ClientInfo) ListDatabase(ctx context.Context, dbinfo DbInfo) {}
+func (c ClientInfo) ListDatabase(ctx context.Context, dbinfo DbInfo) {
+
+}
 
 func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabaseParameters) (DbInfo, error) {
 
