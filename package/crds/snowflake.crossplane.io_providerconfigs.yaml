@@ -160,7 +160,7 @@ spec:
                 - source
                 type: object
               snowflakeAccount:
-                description: "snowflake account identifer\n\t for manufacturing the
+                description: "snowflake account identifier\n\t for manufacturing the
                   identifier is VOLVOCARS-MANUFACTURINGANALYTICS\n\t for EDW the indentifier
                   is VOLVOCARS-ENTERPRISE"
                 type: string
