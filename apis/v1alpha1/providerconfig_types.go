@@ -28,12 +28,14 @@ import (
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
 	// Credentials required to authenticate to this provider.
-	Credentials ProviderCredentials `json:"credentials"`
+	PrivateKey ProviderCredentials `json:"credentials"`
 
 	// snowflake account identifer
-	// 	 for manufacturing the identifier is VOLVOCARS.MANUFACTURINGANALYTICS
-	//	 for EDW the indentifier is VOLVOCARS.ENTERPRISE
-	SnowflakeAccount string `json:"snowflakeAccount"`
+	// 	 for manufacturing the identifier is VOLVOCARS-MANUFACTURINGANALYTICS
+	//	 for EDW the indentifier is VOLVOCARS-ENTERPRISE
+	SnowflakeAccount string              `json:"snowflakeAccount"`
+	Username         string              `json:"username"`
+	FingerPrint      ProviderCredentials `json:"fingerPrint"`
 }
 
 // ProviderCredentials required to authenticate.

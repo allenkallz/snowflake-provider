@@ -3,7 +3,11 @@ package snowflake
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
+	"time"
 
 	dbv1alpha1 "github.com/allenkallz/provider-snowflake/apis/database/v1alpha1"
 
@@ -13,21 +17,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
 	invalidName   = "Invalid name"
 	requestFailed = "Failed to create request"
 	configNotJson = "Spec Config not actually JSON"
+	readCredError = "Can't read provider credential "
 )
 
 var ErrNotFound = errors.New("Not found")
-
-type ClientInfo struct {
-	SnowflakeAccount string
-	JwtToken         string
-	httpClient       *http.Client
-}
 
 type Client interface {
 	// TableClient
@@ -36,31 +37,19 @@ type Client interface {
 
 type DatabaseClient interface {
 	ListDatabase(ctx context.Context, dbinfo DbInfo)
-	FetchDatabase(ctx context.Context, dbinfo DbInfo)
+	FetchDatabase(ctx context.Context, db *dbv1alpha1.DatabaseParameters) (DbInfo, error)
 	CreateDatabase(ctx context.Context, db *dbv1alpha1.DatabaseParameters) (string, error)
 	DeleteDatabase(ctx context.Context, db *dbv1alpha1.DatabaseParameters) error
 	UpdateDatabase(ctx context.Context, dbinfo DbInfo)
 }
 
-// type TableClient interface {
-// 	ListTable(ctx context.Context, tableinfo TableInfo)
-// 	FetchTable(ctx context.Context, tableinfo TableInfo)
-// 	CreateTable(ctx context.Context, tableinfo TableInfo)
-// 	DeleteTable(ctx context.Context, tableinfo TableInfo)
-// 	UpdateTable(ctx context.Context, tableinfo TableInfo)
-// }
-
-func (c *ClientInfo) MakeRequest(method string, api_path string, payload map[string]interface{}) {
-
+type ClientInfo struct {
+	SnowflakeAccount string
+	Username         string
+	FingerPrint      string
+	PrivateKey       string
+	httpClient       *http.Client
 }
-
-// func MakeClient(snowflakeaccount string, jwttoken string) ClientInfo {
-// 	return ClientInfo{
-// 		SnowflakeAccount: snowflakeaccount,
-// 		JwtToken:         jwttoken,
-// 		httpClient:       &http.Client{},
-// 	}
-// }
 
 // all helper method
 func GetClientInfo(ctx context.Context, c client.Client, mg resource.Managed) (*ClientInfo, error) {
@@ -85,15 +74,23 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
 	}
 
-	// read authToken from of secretRef
-	authToken, err := authFromCredentials(ctx, c, pc.Spec.Credentials)
+	// read private key from of secretRef
+	privateKey, err := authFromCredentials(ctx, c, pc.Spec.PrivateKey)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, readCredError)
+	}
+
+	// finger print read
+	fingerPrint, err := authFromCredentials(ctx, c, pc.Spec.FingerPrint)
+	if err != nil {
+		return nil, errors.Wrap(err, readCredError)
 	}
 
 	return &ClientInfo{
-		SnowflakeAccount: pc.Spec.SnowflakeAccount,
-		JwtToken:         authToken,
+		SnowflakeAccount: strings.ToUpper(strings.Replace(pc.Spec.SnowflakeAccount, ".", "-", -1)),
+		Username:         strings.ToUpper(pc.Spec.Username),
+		FingerPrint:      fingerPrint,
+		PrivateKey:       privateKey,
 		httpClient:       &http.Client{},
 	}, nil
 }
@@ -123,4 +120,52 @@ func configPrep(config string) (map[string]any, error) {
 		}
 	}
 	return ret, nil
+}
+
+// Generate JWT Token
+// ToDo :  return active token if exist
+func generateJWT(clientinfo ClientInfo) (string, error) {
+	// Define expiration time
+	expirationTime := time.Now().Add(1 * time.Hour)
+
+	// Create custom claims
+	claims := jwt.MapClaims{
+		"iss": clientinfo.SnowflakeAccount + "." + clientinfo.Username + ".SHA256:" + clientinfo.FingerPrint,
+		"exp": expirationTime,
+		"iat": time.Now().UTC().Unix(),
+		"sub": clientinfo.SnowflakeAccount + "." + clientinfo.Username,
+	}
+
+	// Create a token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+
+	// Parse the private key
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(clientinfo.PrivateKey))
+	if err != nil {
+		return "", errors.Wrap(err, "Unable to parse private key")
+	}
+	// Sign the token with the private key
+	tokenString, err := token.SignedString(privateKey)
+	if err != nil {
+		return "", errors.Wrap(err, "Unable to create token")
+	}
+
+	return tokenString, nil
+}
+
+func getBaseUrl(c ClientInfo) string {
+	baseUrl, _ := url.JoinPath("https://", c.SnowflakeAccount, "snowflakecomputing.com")
+
+	return baseUrl
+}
+
+// Setting all common header to request http
+func setReqHeaders(req *http.Request, jwtToken string) {
+
+	authToken := fmt.Sprintf("%s %s", "Bearer", jwtToken)
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", authToken)
+	req.Header.Set("X-Snowflake-Authorization-Token-Type", "KEYPAIR_JWT")
 }

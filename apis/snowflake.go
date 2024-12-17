@@ -20,13 +20,13 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	snowflakev1alpha1 "github.com/allenkallz/provider-snowflake/apis/v1alpha1"
+	databasev1alpha1 "github.com/allenkallz/provider-snowflake/apis/database/v1alpha1"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
-		snowflakev1alpha1.SchemeBuilder.AddToScheme,
+		databasev1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

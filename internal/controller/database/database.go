@@ -61,10 +61,6 @@ const (
 // 	newNoOpService = func(_ []byte) (interface{}, error) { return &NoOpService{}, nil }
 // )
 
-func NewDatabaseClient(cfg snowflake.ClientInfo) {
-
-}
-
 // Setup adds a controller that reconciles Database managed resources.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1alpha1.DatabaseGroupKind)
@@ -126,14 +122,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 
 	// cd := pc.Spec.Credentials
 
-	clientInfo, err := snowflake.GetClientInfo(ctx, c.kube, mg)
+	svc, err := snowflake.GetClientInfo(ctx, c.kube, mg)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	// svc := snowflake.MakeClient(clientInfo.SnowflakeAccount, clientInfo.JwtToken)
-
-	return &external{client: clientInfo, kube: c.kube}, nil
+	// var dbClient snowflake.DatabaseClient = svc
+	return &external{client: svc, kube: c.kube}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
@@ -145,7 +140,7 @@ type external struct {
 	kube   client.Client
 }
 
-func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1alpha1.Database)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotDatabase)
@@ -153,6 +148,27 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// These fmt statements should be removed in the real implementation.
 	fmt.Printf("Observing: %+v", cr)
+
+	// extName := meta.GetExternalName(cr)
+	// fmt.Printf("ext name : " + extName)
+
+	// if extName == "" {
+	// 	return managed.ExternalObservation{
+	// 		ResourceExists: false,
+	// 	}, nil
+	// }
+
+	// get database and see it exist or not
+
+	dbinfo, err := e.client.FetchDatabase(ctx, &cr.Spec.ForProvider)
+
+	if err != nil {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
+	fmt.Printf("response fetch db: ", dbinfo)
+
+	cr.SetConditions(xpv1.Available())
 
 	return managed.ExternalObservation{
 		// Return false when the external resource does not exist. This lets
@@ -197,7 +213,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}, nil
 }
 
-func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*v1alpha1.Database)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotDatabase)

@@ -69,12 +69,12 @@ func (in *StoreConfig) GetStoreConfig() xpv1.SecretStoreConfig {
 
 // GetCondition of this StoreConfig.
 func (in *StoreConfig) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
-	return in.Status.GetCondition(ct)
+	return in.GetCondition(ct)
 }
 
 // SetConditions of this StoreConfig.
 func (in *StoreConfig) SetConditions(c ...xpv1.Condition) {
-	in.Status.SetConditions(c...)
+	in.SetConditions(c...)
 }
 
 // StoreConfig type metadata.

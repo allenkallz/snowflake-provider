@@ -15,24 +15,75 @@ import (
 )
 
 type DbInfo struct {
-	DbName string
-	Kind   string
+	name string
+	kind string
 }
 
 func (c ClientInfo) ListDatabase(ctx context.Context, dbinfo DbInfo) {}
 
-func (c ClientInfo) FetchDatabase(ctx context.Context, dbinfo DbInfo) {}
+func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabaseParameters) (DbInfo, error) {
+
+	// Get token first
+	authToken, err := generateJWT(c)
+	if err != nil {
+		fmt.Println("Error gettingToken:", err)
+		return DbInfo{}, err
+	}
+
+	fullPath, err := url.JoinPath(getBaseUrl(c), "api/v2/databases", db.Name)
+
+	if err != nil {
+		return DbInfo{}, err
+	}
+
+	req, err := http.NewRequest("GET", fullPath, nil)
+	if err != nil {
+		return DbInfo{}, err
+	}
+
+	setReqHeaders(req, authToken)
+
+	// make request
+	resp, err := c.httpClient.Do(req)
+
+	defer resp.Body.Close()
+
+	if int(resp.StatusCode) >= 400 {
+		fmt.Printf("Failed to delete resource. Status Code: %d\n", resp.StatusCode)
+		fmt.Println("Error making request:", err)
+
+		return DbInfo{}, nil
+	}
+
+	respBody, err := io.ReadAll(resp.Body)
+
+	// Create a map to hold the JSON data
+	var jsonResponse DbInfo
+	err = json.Unmarshal(respBody, &jsonResponse)
+
+	return DbInfo{
+		name: jsonResponse.name,
+		kind: jsonResponse.kind,
+	}, nil
+}
 
 // create database
 func (c ClientInfo) CreateDatabase(ctx context.Context, db *v1alpha1.DatabaseParameters) (string, error) {
 
-	body := DbInfo{DbName: db.Name, Kind: "PERMANENT"}
+	// Get token first
+	authToken, err := generateJWT(c)
+	if err != nil {
+		fmt.Println("Error gettingToken:", err)
+		return "", err
+	}
+
+	body := DbInfo{name: db.Name, kind: "PERMANENT"}
 
 	// queryParam
 	queryParams := url.Values{}
 	queryParams.Add("createMode", "errorIfExists")
 
-	fullPath, err := url.JoinPath("https://", c.SnowflakeAccount, "snowflakecomputing.com", "api/v2/databases")
+	fullPath, err := url.JoinPath(getBaseUrl(c), "api/v2/databases")
 	fullUrl := fmt.Sprintf("%s?%s", fullPath, queryParams.Encode())
 
 	jsonBody, err := json.Marshal(body)
@@ -45,12 +96,7 @@ func (c ClientInfo) CreateDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 		return "", err
 	}
 
-	authToken := fmt.Sprintf("%s %s", "Bearer", c.JwtToken)
-
-	// Add headers to request
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", authToken)
+	setReqHeaders(req, authToken)
 
 	// make request
 	resp, err := c.httpClient.Do(req)
@@ -78,7 +124,14 @@ func (c ClientInfo) CreateDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 	return string(resp.StatusCode), err
 }
 
-func (c ClientInfo) DeleteDatabase(ctx context.Context, dbName string) error {
+func (c ClientInfo) DeleteDatabase(ctx context.Context, db *v1alpha1.DatabaseParameters) error {
+
+	// Get token first
+	authToken, err := generateJWT(c)
+	if err != nil {
+		fmt.Println("Error gettingToken:", err)
+		return err
+	}
 
 	// queryParam
 	queryParams := url.Values{}
@@ -87,9 +140,7 @@ func (c ClientInfo) DeleteDatabase(ctx context.Context, dbName string) error {
 	// dont delete if forign key exist and return warning
 	queryParams.Add("restrict", "true")
 
-	authToken := fmt.Sprintf("%s %s", "Bearer", c.JwtToken)
-
-	fullPath, err := url.JoinPath("https://", c.SnowflakeAccount, "snowflakecomputing.com", "api/v2/databases", dbName)
+	fullPath, err := url.JoinPath(getBaseUrl(c), "api/v2/databases", db.Name)
 	fullUrl := fmt.Sprintf("%s?%s", fullPath, queryParams.Encode())
 
 	if err != nil {
@@ -101,16 +152,14 @@ func (c ClientInfo) DeleteDatabase(ctx context.Context, dbName string) error {
 		return err
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", authToken)
+	setReqHeaders(req, authToken)
 
 	// make request
 	resp, err := c.httpClient.Do(req)
 
 	defer resp.Body.Close()
 
-	if err != nil {
+	if int(resp.StatusCode) >= 400 {
 		fmt.Printf("Failed to delete resource. Status Code: %d\n", resp.StatusCode)
 		fmt.Println("Error making request:", err)
 	}
