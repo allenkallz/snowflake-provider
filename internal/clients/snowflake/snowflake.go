@@ -3,6 +3,7 @@ package snowflake
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -157,4 +158,10 @@ func setReqHeaders(req *http.Request, jwtToken string) {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", authToken)
 	req.Header.Set("X-Snowflake-Authorization-Token-Type", "KEYPAIR_JWT")
+}
+
+func dclose(c io.Closer) {
+	if err := c.Close(); err != nil {
+		fmt.Println(err)
+	}
 }

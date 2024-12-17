@@ -51,7 +51,7 @@ func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabasePara
 	if err != nil {
 		return DbInfo{}, err
 	}
-	defer resp.Body.Close()
+	defer dclose(resp.Body)
 
 	if resp.StatusCode == 404 {
 		return DbInfo{}, ErrNotFound
@@ -118,7 +118,7 @@ func (c ClientInfo) CreateDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 		return "", err
 	}
 
-	defer resp.Body.Close()
+	defer dclose(resp.Body)
 
 	// Read the response
 	respBody, err := io.ReadAll(resp.Body)
@@ -173,7 +173,7 @@ func (c ClientInfo) DeleteDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 		fmt.Println("Error making request:", err)
 		return err
 	}
-	defer resp.Body.Close()
+	defer dclose(resp.Body)
 
 	if resp.StatusCode >= 400 {
 		fmt.Printf("Failed to delete resource. Status Code: %d\n", resp.StatusCode)
