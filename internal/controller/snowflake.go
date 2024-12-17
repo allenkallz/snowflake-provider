@@ -32,6 +32,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		database.Setup,
 	} {
 		if err := setup(mgr, o); err != nil {
+			print(err)
 			return err
 		}
 	}
