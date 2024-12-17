@@ -37,9 +37,9 @@ import (
 // https://github.com/crossplane/crossplane/blob/master/CONTRIBUTING.md#contributing-code
 
 func TestObserve(t *testing.T) {
-	type fields struct {
-		service interface{}
-	}
+	// type fields struct {
+	// 	service interface{}
+	// }
 
 	type args struct {
 		ctx context.Context

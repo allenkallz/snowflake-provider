@@ -30,7 +30,7 @@ type ProviderConfigSpec struct {
 	// Credentials required to authenticate to this provider.
 	PrivateKey ProviderCredentials `json:"credentials"`
 
-	// snowflake account identifer
+	// snowflake account identifier
 	// 	 for manufacturing the identifier is VOLVOCARS-MANUFACTURINGANALYTICS
 	//	 for EDW the indentifier is VOLVOCARS-ENTERPRISE
 	SnowflakeAccount string              `json:"snowflakeAccount"`

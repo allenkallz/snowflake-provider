@@ -15,8 +15,8 @@ import (
 )
 
 type DbInfo struct {
-	name string
-	kind string
+	Name string `json:"name"`
+	Kind string `json:"kind"`
 }
 
 func (c ClientInfo) ListDatabase(ctx context.Context, dbinfo DbInfo) {}
@@ -36,7 +36,7 @@ func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabasePara
 		return DbInfo{}, err
 	}
 
-	req, err := http.NewRequest("GET", fullPath, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fullPath, nil)
 	if err != nil {
 		return DbInfo{}, err
 	}
@@ -46,24 +46,35 @@ func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabasePara
 	// make request
 	resp, err := c.httpClient.Do(req)
 
+	if err != nil {
+		return DbInfo{}, err
+	}
 	defer resp.Body.Close()
 
-	if int(resp.StatusCode) >= 400 {
-		fmt.Printf("Failed to delete resource. Status Code: %d\n", resp.StatusCode)
-		fmt.Println("Error making request:", err)
-
-		return DbInfo{}, nil
+	if resp.StatusCode == 404 {
+		return DbInfo{}, ErrNotFound
 	}
 
-	respBody, err := io.ReadAll(resp.Body)
+	if resp.StatusCode >= 400 {
+		fmt.Printf("Failed to fetch resource. Status Code: %d\n", resp.StatusCode)
+		fmt.Println("Error making request:", err)
+
+		return DbInfo{}, errors.New("Failed to Fetch database")
+	}
+
+	respBody, _ := io.ReadAll(resp.Body)
 
 	// Create a map to hold the JSON data
 	var jsonResponse DbInfo
+
 	err = json.Unmarshal(respBody, &jsonResponse)
+	if err != nil {
+		return DbInfo{}, err
+	}
 
 	return DbInfo{
-		name: jsonResponse.name,
-		kind: jsonResponse.kind,
+		Name: jsonResponse.Name,
+		Kind: jsonResponse.Kind,
 	}, nil
 }
 
@@ -77,13 +88,13 @@ func (c ClientInfo) CreateDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 		return "", err
 	}
 
-	body := DbInfo{name: db.Name, kind: "PERMANENT"}
+	body := DbInfo{Name: db.Name, Kind: "PERMANENT"}
 
 	// queryParam
 	queryParams := url.Values{}
 	queryParams.Add("createMode", "errorIfExists")
 
-	fullPath, err := url.JoinPath(getBaseUrl(c), "api/v2/databases")
+	fullPath, _ := url.JoinPath(getBaseUrl(c), "api/v2/databases")
 	fullUrl := fmt.Sprintf("%s?%s", fullPath, queryParams.Encode())
 
 	jsonBody, err := json.Marshal(body)
@@ -91,7 +102,7 @@ func (c ClientInfo) CreateDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", fullUrl, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", fullUrl, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return "", err
 	}
@@ -118,10 +129,10 @@ func (c ClientInfo) CreateDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 	fmt.Println("Response Status:", resp.Status)
 	fmt.Println("Response Body:", string(respBody))
 
-	if int(resp.StatusCode) >= 400 {
+	if resp.StatusCode >= 400 {
 		return "", errors.Wrap(err, requestFailed)
 	}
-	return string(resp.StatusCode), err
+	return string(respBody), err
 }
 
 func (c ClientInfo) DeleteDatabase(ctx context.Context, db *v1alpha1.DatabaseParameters) error {
@@ -147,7 +158,7 @@ func (c ClientInfo) DeleteDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 		return err
 	}
 
-	req, err := http.NewRequest("DELETE", fullUrl, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", fullUrl, nil)
 	if err != nil {
 		return err
 	}
@@ -156,10 +167,13 @@ func (c ClientInfo) DeleteDatabase(ctx context.Context, db *v1alpha1.DatabasePar
 
 	// make request
 	resp, err := c.httpClient.Do(req)
-
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		return err
+	}
 	defer resp.Body.Close()
 
-	if int(resp.StatusCode) >= 400 {
+	if resp.StatusCode >= 400 {
 		fmt.Printf("Failed to delete resource. Status Code: %d\n", resp.StatusCode)
 		fmt.Println("Error making request:", err)
 	}

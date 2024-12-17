@@ -163,10 +163,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	dbinfo, err := e.client.FetchDatabase(ctx, &cr.Spec.ForProvider)
 
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, nil
+		return managed.ExternalObservation{ResourceExists: false}, err
 	}
 
-	fmt.Printf("response fetch db: ", dbinfo)
+	fmt.Println("response fetch db: ", dbinfo)
 
 	cr.SetConditions(xpv1.Available())
 
@@ -200,7 +200,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	resp, err := e.client.CreateDatabase(ctx, &cr.Spec.ForProvider)
 
-	fmt.Printf("creating database resp: " + resp)
+	fmt.Println("creating database resp: " + resp)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
@@ -240,6 +240,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	err := e.client.DeleteDatabase(ctx, &cr.Spec.ForProvider)
 
-	fmt.Printf("err: ", err)
+	fmt.Println("err: ", err)
 	return err
 }

@@ -2,7 +2,6 @@ package snowflake
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -86,8 +85,9 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		return nil, errors.Wrap(err, readCredError)
 	}
 
+	updatedAccount := strings.ReplaceAll(pc.Spec.SnowflakeAccount, ".", "-")
 	return &ClientInfo{
-		SnowflakeAccount: strings.ToUpper(strings.Replace(pc.Spec.SnowflakeAccount, ".", "-", -1)),
+		SnowflakeAccount: strings.ToUpper(updatedAccount),
 		Username:         strings.ToUpper(pc.Spec.Username),
 		FingerPrint:      fingerPrint,
 		PrivateKey:       privateKey,
@@ -109,17 +109,6 @@ func authFromCredentials(ctx context.Context, c client.Client, creds v1alpha1.Pr
 	}
 
 	return string(s.Data[csr.Key]), nil
-}
-
-func configPrep(config string) (map[string]any, error) {
-	ret := map[string]any{}
-	if config != "" {
-		err := json.Unmarshal([]byte(config), &ret)
-		if err != nil {
-			return ret, errors.Wrap(err, configNotJson)
-		}
-	}
-	return ret, nil
 }
 
 // Generate JWT Token
