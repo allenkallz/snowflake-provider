@@ -120,6 +120,7 @@ func generateJWT(c ClientInfo) (string, error) {
 	fmt.Println("username: ", c.Username)
 	fmt.Println("fingerprint : ", c.FingerPrint)
 	fmt.Println("account :", c.SnowflakeAccount)
+	fmt.Println("account :", c.PrivateKey)
 
 	// Define expiration time
 	expirationTime := time.Now().Add(1 * time.Hour)
