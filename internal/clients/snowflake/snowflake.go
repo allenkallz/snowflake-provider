@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -144,8 +143,10 @@ func generateJWT(clientinfo ClientInfo) (string, error) {
 }
 
 func getBaseUrl(c ClientInfo) string {
-	baseUrl, _ := url.JoinPath("https://", c.SnowflakeAccount, "snowflakecomputing.com")
 
+	// baseUrl, _ := url.JoinPath("https://", c.SnowflakeAccount, "snowflakecomputing.com")
+
+	baseUrl := "https://" + strings.ToLower(c.SnowflakeAccount) + ".snowflakecomputing.com"
 	return baseUrl
 }
 
