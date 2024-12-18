@@ -113,23 +113,23 @@ func authFromCredentials(ctx context.Context, c client.Client, creds v1alpha1.Pr
 
 // Generate JWT Token
 // ToDo :  return active token if exist
-func generateJWT(clientinfo ClientInfo) (string, error) {
+func generateJWT(c ClientInfo) (string, error) {
 	// Define expiration time
 	expirationTime := time.Now().Add(1 * time.Hour)
 
 	// Create custom claims
 	claims := jwt.MapClaims{
-		"iss": clientinfo.SnowflakeAccount + "." + clientinfo.Username + ".SHA256:" + clientinfo.FingerPrint,
+		"iss": c.SnowflakeAccount + "." + c.Username + ".SHA256:" + c.FingerPrint,
 		"exp": expirationTime,
 		"iat": time.Now().UTC().Unix(),
-		"sub": clientinfo.SnowflakeAccount + "." + clientinfo.Username,
+		"sub": c.SnowflakeAccount + "." + c.Username,
 	}
 
 	// Create a token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	// Parse the private key
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(clientinfo.PrivateKey))
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(c.PrivateKey))
 	if err != nil {
 		return "", errors.Wrap(err, "Unable to parse private key")
 	}

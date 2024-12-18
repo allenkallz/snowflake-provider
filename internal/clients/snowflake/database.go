@@ -57,14 +57,15 @@ func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabasePara
 		return DbInfo{}, ErrNotFound
 	}
 
+	respBody, _ := io.ReadAll(resp.Body)
+
 	if resp.StatusCode >= 400 {
-		fmt.Printf("Failed to fetch resource. Status Code: %d\n", resp.StatusCode)
+		fmt.Println("Failed to fetch resource. Status Code: ", resp.StatusCode)
+		fmt.Println("response body: ", string(respBody))
 		fmt.Println("Error making request:", err)
 
 		return DbInfo{}, errors.New("Failed to Fetch database")
 	}
-
-	respBody, _ := io.ReadAll(resp.Body)
 
 	// Create a map to hold the JSON data
 	var jsonResponse DbInfo
