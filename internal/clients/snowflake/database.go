@@ -63,7 +63,6 @@ func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabasePara
 		fmt.Println("Failed to fetch resource. Status Code: ", resp.StatusCode)
 		fmt.Println("response body: ", string(respBody))
 		fmt.Println("Error making request:", err)
-
 		return DbInfo{}, errors.New("Failed to Fetch database")
 	}
 

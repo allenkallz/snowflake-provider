@@ -114,6 +114,13 @@ func authFromCredentials(ctx context.Context, c client.Client, creds v1alpha1.Pr
 // Generate JWT Token
 // ToDo :  return active token if exist
 func generateJWT(c ClientInfo) (string, error) {
+
+	fmt.Println("Creating JWT token")
+
+	fmt.Println("username: ", c.Username)
+	fmt.Println("fingerprint : ", c.FingerPrint)
+	fmt.Println("account :", c.SnowflakeAccount)
+
 	// Define expiration time
 	expirationTime := time.Now().Add(1 * time.Hour)
 
@@ -138,7 +145,7 @@ func generateJWT(c ClientInfo) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "Unable to create token")
 	}
-
+	fmt.Println("token :   ", tokenString)
 	return tokenString, nil
 }
 
