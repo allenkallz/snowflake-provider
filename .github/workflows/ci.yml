@@ -105,6 +105,7 @@ jobs:
 
 
   publish-artifacts:
+    permissions: write-all
     runs-on: ubuntu-22.04
     needs: detect-noop
     if: needs.detect-noop.outputs.noop != 'true'
