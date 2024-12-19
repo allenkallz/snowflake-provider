@@ -117,13 +117,13 @@ func generateJWT(c ClientInfo) (string, error) {
 
 	fmt.Println("Creating JWT token")
 
-	fmt.Println("username: ", c.Username)
-	fmt.Println("fingerprint : ", c.FingerPrint)
-	fmt.Println("account :", c.SnowflakeAccount)
-	fmt.Println("account :", c.PrivateKey)
+	// fmt.Println("username: ", c.Username)
+	// fmt.Println("fingerprint : ", c.FingerPrint)
+	// fmt.Println("account :", c.SnowflakeAccount)
+	// fmt.Println("account :", c.PrivateKey)
 
 	// Define expiration time
-	expirationTime := time.Now().Add(1 * time.Hour)
+	expirationTime := time.Now().UTC().Add(1 * time.Hour).Unix()
 
 	// Create custom claims
 	claims := jwt.MapClaims{
