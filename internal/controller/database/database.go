@@ -162,8 +162,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	dbinfo, err := e.client.FetchDatabase(ctx, &cr.Spec.ForProvider)
 
+	// handle 404 not found issue
+	if errors.Is(err, snowflake.ErrNotFound) {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
+	// handle other error
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, err
+		return managed.ExternalObservation{}, err
 	}
 
 	fmt.Println("response fetch db: ", dbinfo)

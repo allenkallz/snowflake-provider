@@ -49,7 +49,7 @@ func (c ClientInfo) FetchDatabase(ctx context.Context, db *v1alpha1.DatabasePara
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return DbInfo{}, err
+		return DbInfo{}, errors.Wrap(err, "Failed to make database API request")
 	}
 	defer dclose(resp.Body)
 

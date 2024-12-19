@@ -28,6 +28,7 @@ const (
 )
 
 var ErrNotFound = errors.New("Not found")
+var ErrBadRequest = errors.New("Bad request")
 
 type Client interface {
 	// TableClient
@@ -146,7 +147,6 @@ func generateJWT(c ClientInfo) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "Unable to create token")
 	}
-	fmt.Println("token :   ", tokenString)
 	return tokenString, nil
 }
 
